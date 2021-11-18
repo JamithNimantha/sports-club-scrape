@@ -34,7 +34,7 @@ public class StartScrape {
     private void scrapeListsOfSportsClubs(){
 
         FirefoxOptions options = new FirefoxOptions();
-        options.setHeadless(false);
+        options.setHeadless(true);
         WebDriver driver = new FirefoxDriver(options);
         driver.manage().timeouts().implicitlyWait(40, TimeUnit.SECONDS);
         driver.navigate().to("http://pagina.jccm.es/administracion_electronica/formularios/listadoRegistroEntidadesDeportivas.phtml");
@@ -78,72 +78,71 @@ public class StartScrape {
 //            }
 //        }
 
-        List<Record2> record2RepoAll = record2Repo.findAll();
+        List<Record2> record2RepoAll = record2Repo.findAllByProvinciaIsNull();
 
         for (Record2 record : record2RepoAll) {
 
             driver.navigate().to(record.getUrl());
 
-            WebElement element = driver.findElement(By.xpath("//*[contains(text(), 'Nombre Entidad:')]"));
 
             try {
                 record.setNombre(driver.findElement(By.xpath("//*[contains(text(), 'Nombre Entidad:')]/following-sibling::span")).getText().trim());
             } catch (NoSuchElementException e) {
-                log.error(e.getMessage());
+//                log.error(e.getMessage());
             }
 
             try {
                 record.setDireccion(driver.findElement(By.xpath("//*[contains(text(), 'Dirección:')]/following-sibling::span")).getText().trim());
             } catch (NoSuchElementException e) {
-                log.error(e.getMessage());
+//                log.error(e.getMessage());
             }
 
             try {
                 record.setProvincia(driver.findElement(By.xpath("//*[contains(text(), 'Provincia:')]/following-sibling::span")).getText().trim());
             } catch (NoSuchElementException e) {
-                log.error(e.getMessage());
+//                log.error(e.getMessage());
             }
 
             try {
                 record.setMunicipio(driver.findElement(By.xpath("//*[contains(text(), 'Municipio:')]/following-sibling::span")).getText().trim());
             } catch (NoSuchElementException e) {
-                log.error(e.getMessage());
+//                log.error(e.getMessage());
             }
 
             try {
                 record.setPostal(driver.findElement(By.xpath("//*[contains(text(), 'Código postal:')]/following-sibling::span")).getText().trim());
             } catch (NoSuchElementException e) {
-                log.error(e.getMessage());
+//                log.error(e.getMessage());
             }
 
             try {
                 record.setEmail(driver.findElement(By.xpath("//*[contains(text(), 'Email:')]/following-sibling::span")).getText().trim());
             } catch (NoSuchElementException e) {
-                log.error(e.getMessage());
+//                log.error(e.getMessage());
             }
 
             try {
                 record.setTelefono(driver.findElement(By.xpath("//*[contains(text(), 'Teléfono móvil:')]/following-sibling::span")).getText().trim());
             } catch (NoSuchElementException e) {
-                log.error(e.getMessage());
+//                log.error(e.getMessage());
             }
 
             try {
                 record.setModalidad1(driver.findElement(By.xpath("//*[contains(text(), '1.- MODALIDAD:')]/following-sibling::span")).getText().trim());
             } catch (NoSuchElementException e) {
-                log.error(e.getMessage());
+//                log.error(e.getMessage());
             }
 
             try {
                 record.setModalidad2(driver.findElement(By.xpath("//*[contains(text(), '2.- MODALIDAD:')]/following-sibling::span")).getText().trim());
             } catch (NoSuchElementException e) {
-                log.error(e.getMessage());
+//                log.error(e.getMessage());
             }
 
             try {
                 record.setModalidad3(driver.findElement(By.xpath("//*[contains(text(), '3.- MODALIDAD:')]/following-sibling::span")).getText().trim());
             } catch (NoSuchElementException e) {
-                log.error(e.getMessage());
+//                log.error(e.getMessage());
             }
 
 
