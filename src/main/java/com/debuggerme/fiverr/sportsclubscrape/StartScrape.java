@@ -2,18 +2,22 @@ package com.debuggerme.fiverr.sportsclubscrape;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.jsoup.Connection;
+import org.jsoup.Jsoup;
+import org.jsoup.nodes.Document;
+import org.jsoup.nodes.Element;
 import org.openqa.selenium.By;
-import org.openqa.selenium.NoSuchElementException;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.firefox.FirefoxDriver;
 import org.openqa.selenium.firefox.FirefoxOptions;
-import org.openqa.selenium.support.ui.Select;
-import org.openqa.selenium.support.ui.Wait;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.PostConstruct;
+import java.io.IOException;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
 @Slf4j
@@ -33,13 +37,13 @@ public class StartScrape {
 
     private void scrapeListsOfSportsClubs(){
 
-        FirefoxOptions options = new FirefoxOptions();
-        options.setHeadless(true);
-        WebDriver driver = new FirefoxDriver(options);
-        driver.manage().timeouts().implicitlyWait(40, TimeUnit.SECONDS);
-        driver.navigate().to("http://pagina.jccm.es/administracion_electronica/formularios/listadoRegistroEntidadesDeportivas.phtml");
-
-        String[] array = {"02", "13", "16", "19", "45"};
+//        FirefoxOptions options = new FirefoxOptions();
+//        options.setHeadless(true);
+//        WebDriver driver = new FirefoxDriver(options);
+//        driver.manage().timeouts().implicitlyWait(40, TimeUnit.SECONDS);
+//        driver.navigate().to("http://pagina.jccm.es/administracion_electronica/formularios/listadoRegistroEntidadesDeportivas.phtml");
+//
+//        String[] array = {"02", "13", "16", "19", "45"};
 
 
 //        for (String value : array) {
@@ -78,77 +82,119 @@ public class StartScrape {
 //            }
 //        }
 
+        
+        
         List<Record2> record2RepoAll = record2Repo.findAllByProvinciaIsNull();
+        Map<String, String> cookies = new HashMap<>();
+
+        try {
+            Connection.Response response = Jsoup.connect("http://pagina.jccm.es/administracion_electronica/formularios/detalleREGED.phtml?COD_REGISTRO=0000004186")
+                    .userAgent("Mozilla/5.0 (Windows NT 6.2; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/32.0.1667.0 Safari/537.36")
+                    .header("Accept-Encoding", "gzip,deflate,sdch")
+                    .timeout(0)
+                    .maxBodySize(0)
+                    .ignoreContentType(true)
+                    .header("Cookie", "PHPSESSID=1bolcrtt3adgkim778kkc8k842; QueueITAccepted-SDFrts345E-V3_jccmadminelectronica=EventId=jccmadminelectronica&QueueId=fea05791-55f4-4bfa-87a1-cac7b2de6c5b&RedirectType=safetynet&IssueTime=1637201187&Hash=408c14756c656397520f82e1545e9ae586af1aa5fcd9c3ea650497f0806a1989")
+                    .execute();
+
+            cookies = response.cookies();
+
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
 
         for (Record2 record : record2RepoAll) {
 
-            driver.navigate().to(record.getUrl());
-
-
+            log.info("Scraping URL {}", record.getUrl());
             try {
-                record.setNombre(driver.findElement(By.xpath("//*[contains(text(), 'Nombre Entidad:')]/following-sibling::span")).getText().trim());
-            } catch (NoSuchElementException e) {
+                Connection.Response response = Jsoup
+                        .connect(record.getUrl())
+                        .userAgent("Mozilla/5.0 (Windows NT 6.2; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/32.0.1667.0 Safari/537.36")
+                        .header("Accept-Encoding", "gzip,deflate,sdch")
+                        .timeout(0)
+                        .maxBodySize(0)
+                        .ignoreContentType(true)
+                        .cookies(cookies)
+                        .execute();
+
+                cookies = response.cookies();
+
+                Element element = response.parse().selectFirst("#area_contenidos_formu > div.contenido_azul");
+
+
+                try {
+                    record.setNombre(element.selectFirst("label:containsOwn(Nombre Entidad:)").nextElementSibling().text().trim());
+                } catch (Exception e) {
 //                log.error(e.getMessage());
+                }
+
+                try {
+                    record.setDireccion(element.selectFirst("label:containsOwn(Dirección:)").nextElementSibling().text().trim());
+                } catch (Exception e) {
+//                log.error(e.getMessage());
+                }
+
+                try {
+                    record.setProvincia(element.selectFirst("label:containsOwn(Provincia:)").nextElementSibling().text().trim());
+                } catch (Exception e) {
+//                log.error(e.getMessage());
+                }
+
+                try {
+                    record.setMunicipio(element.selectFirst("label:containsOwn(Municipio:)").nextElementSibling().text().trim());
+                } catch (Exception e) {
+//                log.error(e.getMessage());
+                }
+
+                try {
+                    record.setPostal(element.selectFirst("label:containsOwn(Código postal:)").nextElementSibling().text().trim());
+                } catch (Exception e) {
+//                log.error(e.getMessage());
+                }
+
+                try {
+                    record.setEmail(element.selectFirst("label:containsOwn(Email:)").nextElementSibling().text().trim());
+                } catch (Exception e) {
+//                log.error(e.getMessage());
+                }
+
+                try {
+                    record.setTelefono(element.selectFirst("label:containsOwn(Teléfono móvil:)").nextElementSibling().text().trim());
+                } catch (Exception e) {
+//                log.error(e.getMessage());
+                }
+
+                try {
+                    record.setModalidad1(element.selectFirst("label:containsOwn(1.- MODALIDAD:)").nextElementSibling().text().trim());
+                } catch (Exception e) {
+//                log.error(e.getMessage());
+                }
+
+                try {
+                    record.setModalidad2(element.selectFirst("label:containsOwn(2.- MODALIDAD:)").nextElementSibling().text().trim());
+                } catch (Exception e) {
+//                log.error(e.getMessage());
+                }
+
+                try {
+                    record.setModalidad3(element.selectFirst("label:containsOwn(3.- MODALIDAD:)").nextElementSibling().text().trim());
+                } catch (Exception e) {
+//                log.error(e.getMessage());
+                }
+
+
+                record2Repo.save(record);
+
+//                driver.quit();
+
+                log.info("Updated record {}", record);
+            } catch (IOException e) {
+                e.printStackTrace();
             }
 
-            try {
-                record.setDireccion(driver.findElement(By.xpath("//*[contains(text(), 'Dirección:')]/following-sibling::span")).getText().trim());
-            } catch (NoSuchElementException e) {
-//                log.error(e.getMessage());
-            }
 
-            try {
-                record.setProvincia(driver.findElement(By.xpath("//*[contains(text(), 'Provincia:')]/following-sibling::span")).getText().trim());
-            } catch (NoSuchElementException e) {
-//                log.error(e.getMessage());
-            }
-
-            try {
-                record.setMunicipio(driver.findElement(By.xpath("//*[contains(text(), 'Municipio:')]/following-sibling::span")).getText().trim());
-            } catch (NoSuchElementException e) {
-//                log.error(e.getMessage());
-            }
-
-            try {
-                record.setPostal(driver.findElement(By.xpath("//*[contains(text(), 'Código postal:')]/following-sibling::span")).getText().trim());
-            } catch (NoSuchElementException e) {
-//                log.error(e.getMessage());
-            }
-
-            try {
-                record.setEmail(driver.findElement(By.xpath("//*[contains(text(), 'Email:')]/following-sibling::span")).getText().trim());
-            } catch (NoSuchElementException e) {
-//                log.error(e.getMessage());
-            }
-
-            try {
-                record.setTelefono(driver.findElement(By.xpath("//*[contains(text(), 'Teléfono móvil:')]/following-sibling::span")).getText().trim());
-            } catch (NoSuchElementException e) {
-//                log.error(e.getMessage());
-            }
-
-            try {
-                record.setModalidad1(driver.findElement(By.xpath("//*[contains(text(), '1.- MODALIDAD:')]/following-sibling::span")).getText().trim());
-            } catch (NoSuchElementException e) {
-//                log.error(e.getMessage());
-            }
-
-            try {
-                record.setModalidad2(driver.findElement(By.xpath("//*[contains(text(), '2.- MODALIDAD:')]/following-sibling::span")).getText().trim());
-            } catch (NoSuchElementException e) {
-//                log.error(e.getMessage());
-            }
-
-            try {
-                record.setModalidad3(driver.findElement(By.xpath("//*[contains(text(), '3.- MODALIDAD:')]/following-sibling::span")).getText().trim());
-            } catch (NoSuchElementException e) {
-//                log.error(e.getMessage());
-            }
-
-
-            record2Repo.save(record);
-
-            log.info("Updated record {}", record);
+            
 
 
         }
