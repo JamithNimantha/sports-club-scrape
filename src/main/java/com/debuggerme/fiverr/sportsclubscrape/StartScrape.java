@@ -31,7 +31,7 @@ public class StartScrape {
 
     @PostConstruct
     public void run(){
-        scrapeListsOfSportsClubs();
+//        scrapeListsOfSportsClubs();
     }
 
 
