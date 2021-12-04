@@ -26,8 +26,8 @@ public class LariojaDotOrgScrape {
 
     @PostConstruct
     public void run(){
-        scrapeClubs();
-        scrapeInfo();
+//        scrapeClubs();
+//        scrapeInfo();
 
     }
 
