@@ -23,17 +23,18 @@ public class JuntaDeAndaluciaScrape {
     @PostConstruct
     public void run(){
         try {
-            int offSet = 0;
+            int offSet = 24022;
             while (offSet <= 25840) {
                 Document document = Jsoup
-                        .connect(String.format("https://www.juntadeandalucia.es/deporte/dpweb/buscadorRaed/result?offset=%s&max=10", offSet))
+                        .connect(String.format("https://www.juntadeandalucia.es/deporte/dpweb/buscadorRaed/result?offset=%s&max=1", offSet))
                         .userAgent("Mozilla/5.0 (Windows NT 6.2; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/32.0.1667.0 Safari/537.36")
                         .header("Accept-Encoding", "gzip,deflate,sdch")
                         .timeout(0)
-                        .maxBodySize(0)
                         .ignoreContentType(true)
                         .get();
 
+                log.info("Offset is {}",offSet);
+                log.info("Scraping {}",document.baseUri());
                 Elements tBody = document.select("body > form > div.container > div.container > div:nth-child(1) > table > tbody");
                 Elements trs = tBody.get(0).getElementsByTag("tr");
                 for (int i = 0; i < trs.size(); i +=2) {
@@ -81,7 +82,7 @@ public class JuntaDeAndaluciaScrape {
 
 
                 }
-                offSet += 10;
+                offSet += 1;
             }
         } catch (IOException e) {
             e.printStackTrace();
